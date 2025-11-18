@@ -98,7 +98,6 @@ router.post("/signin", async (req, res) => {
 //         lastName
 //     })
 
-
 //     } catch(err) {
 //         return res.status(401).json({
 //             message: "User does not found"
@@ -106,9 +105,6 @@ router.post("/signin", async (req, res) => {
 //     }
 
 //     res.s
-
-    
-
 
 // })
 export default router;
