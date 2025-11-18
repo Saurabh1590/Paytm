@@ -1,7 +1,10 @@
 import mongoose from "mongoose";
+import dotenv from 'dotenv'
 
+dotenv.config();
 
-mongoose.connect("mongodb+srv://devTinder:8CwgLg0aLYYeCw4r@devtinder.glagl.mongodb.net/paytm")
+console.log(process.env.DATABASE_URL);
+mongoose.connect(process.env.DATABASE_URL)
 .then(() => Console.log("MongoDb is connected"))
 .catch(err => console.error('❌ Connection error:', err));
 

@@ -1,4 +1,4 @@
-const express = require("express");
+import express from "express";
 import { Router } from "express";
 import cors from "cors"
 import mainRouter from "./routes/index.js"
