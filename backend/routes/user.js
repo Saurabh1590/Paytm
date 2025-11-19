@@ -88,23 +88,67 @@ router.post("/signin", async (req, res) => {
   });
 });
 
-// router.put("/", authMiddleware, async (req, res) => {
-//     const {password, firstName, lastName, userId} = req.body;
+const updateBody = zod.object({
+    firstName: zod.string().optional(),
+    lastName: zod.string().optional(),
+    password: zod.string().optional()
+})
 
-//     try{
-//         const updatedUser = await User.findByIdAndUpdate(userId, {
-//         password,
-//         firstName,
-//         lastName
-//     })
+router.put("/", authMiddleware, async (req, res) => {
+    const {success} = updateBody.safeParse(req.body);
+    if(!success) {
+        return res.status(400).json({
+      message: "Error while updating user info",
+    })};
 
-//     } catch(err) {
-//         return res.status(401).json({
-//             message: "User does not found"
-//         })
-//     }
+    const { firstName, lastName, password } = req.body;
+    const hashPassword = await bcrypt.hash(password,10);
 
-//     res.s
+    await User.updateOne(
+        { _id: req.userId }, 
+        { $set: { firstName, lastName, password:hashPassword } } 
+    );
 
-// })
+
+    res.status(200).json({
+        message: "User updated successfully"
+    })
+
+})
+
+router.get("/bulk", async (req, res) => {
+  try {
+    const filter = String(req.query.filter || "").trim();
+
+    if (filter.length < 2) {
+      return res.status(400).json({ message: "Search term too short" });
+    }
+
+    const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const safe = escape(filter);
+
+    const regex = new RegExp(safe, "i");
+
+    const users = await User.find({
+      $or: [
+        { firstName: { $regex: regex } },
+        { lastName: { $regex: regex } }
+      ]
+    }).select("username firstName lastName");
+
+    return res.json({
+      users: users.map(u => ({
+        username: u.username,
+        firstName: u.firstName,
+        lastName: u.lastName,
+        _id: u._id
+      }))
+    });
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+});
+
 export default router;
